@@ -14,9 +14,10 @@ CENTER = (WIDTH // 2, HEIGHT // 2)
 # Variables para el escalado de la imagen
 escala = 1.0  # Escala inicial
 factor_escalado = 0.1  # Factor de cambio de escala por cada paso de la rueda
+Ruta = "Recursos/ConejoSancocho.png"
 
 # Cargar imagen de referencia
-imagen = pygame.image.load("Recursos/ConejoSancocho.png")
+imagen = pygame.image.load(Ruta)
 escala = 1.0  # Escala inicial
 factor_escalado = 0.1  # Factor de cambio de escala por cada paso de la rueda
 nueva_ancho = int(imagen.get_width() * escala)
@@ -62,13 +63,19 @@ btn_color = pygame_gui.elements.UIButton(
 
 btn_mascara = pygame_gui.elements.UIButton(
     relative_rect=pygame.Rect((20, 140), (120, 30)),
-    text='Modo Máscara',
+    text='Modo máscara',
     manager=manager
 )
 
 btn_restablecer = pygame_gui.elements.UIButton(
     relative_rect=pygame.Rect((20, 180), (120, 30)),
     text='Restablecer',
+    manager=manager
+)
+
+btn_Guardar_imagen = pygame_gui.elements.UIButton(
+    relative_rect=pygame.Rect((20, 180), (120, 30)),
+    text='Guardar imagen',
     manager=manager
 )
 
@@ -83,13 +90,18 @@ def calcular_clavos(n):
         for i in range(n)
     ]
 
+def punto_dentro_circulo(punto):
+    distancia = math.sqrt((punto[0] - CENTER[0])**2 + (punto[1] - CENTER[1])**2)
+    return distancia <= RADIUS
 
 clavos = calcular_clavos(n_clavos)
 
+
 # Variables de la máscara
-mascara = pygame.Surface(imagen_escalada.get_size(), pygame.SRCALPHA)
-mascara.fill((0, 0, 0, 0)) # Inicializar con transparencia total
-mascara_rect = mascara.get_rect(center=imagen_rect.center)
+mascara = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
+mascara.fill((255, 255, 255, 255))
+pygame.draw.circle(mascara, (0, 0, 0, 0), CENTER, RADIUS)
+mascara_rect = mascara.get_rect(topleft=(0, 0))
 modo_mascara = False
 dibujando_mascara = False
 radio_pincel = 10
@@ -172,16 +184,10 @@ while running:
 
         elif event.type == pygame.MOUSEMOTION:
             if moviendo_imagen:
-                dx = event.pos[0] - offset_x
-                dy = event.pos[1] - offset_y
-                imagen_rect.x = dx
-                imagen_rect.y = dy
-                mascara_rect.x = dx  # Asegurar que la máscara se mueve con la imagen
-                mascara_rect.y = dy
+                imagen_rect.x = event.pos[0] - offset_x
+                imagen_rect.y = event.pos[1] - offset_y
             elif dibujando_mascara:
                 mouse_x, mouse_y = event.pos
-                mouse_x -= imagen_rect.x
-                mouse_y -= imagen_rect.y
                 if boton_izquierdo_presionado:
                     pygame.draw.circle(mascara, (255, 255, 255, 255), (mouse_x, mouse_y), radio_pincel)
                 elif boton_derecho_presionado:
@@ -198,9 +204,6 @@ while running:
                 imagen_escalada = pygame.transform.scale(imagen, (nueva_ancho, nueva_altura))
                 nuevo_centro = imagen_rect.center  # Guarda el centro anterior
                 imagen_rect = imagen_escalada.get_rect(center=nuevo_centro) # Crea un nuevo rectangulo con el centro anterior
-                # Escalar la máscara
-                mascara = pygame.transform.scale(mascara, (nueva_ancho, nueva_altura))
-                mascara_rect = mascara.get_rect(center=nuevo_centro) # Actualizar el rectángulo de la máscara
         elif event.type == pygame.USEREVENT:
             if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
                 if event.ui_element == checkbox_etiquetas:
@@ -209,7 +212,8 @@ while running:
                     escala = 1.0
                     imagen_escalada = pygame.transform.scale(imagen, imagen.get_size())
                     imagen_rect = imagen_escalada.get_rect(center=CENTER)
-                    mascara.fill((0, 0, 0, 0))
+                    mascara.fill((255, 255, 255, 255))
+                    pygame.draw.circle(mascara, (0, 0, 0, 0), CENTER, RADIUS)
                     radio_pincel = 10
                 elif event.ui_element == btn_mas:
                     n_clavos = min(n_clavos + 1, 500)
@@ -229,6 +233,22 @@ while running:
                         btn_color_clicado = False
                     else:
                         btn_color_clicado = False 
+                elif event.ui_element == btn_Guardar_imagen:
+                    # Obtener los parámetros de escala y ubicación
+                    escala_imagen = escala
+                    ubicacion_imagen = imagen_rect.topleft
+
+                    # Crear una cadena de texto con los parámetros
+                    parametros = f"Ruta: {Ruta}\nEscala: {escala_imagen}\nUbicacion: {ubicacion_imagen}"
+
+                    # Guardar la cadena de texto en un archivo .txt
+                    with open("Recursos/parametros_imagen.txt", "w") as archivo:
+                        archivo.write(parametros)
+
+                    # Guardar la máscara como imagen (opcional)
+                    pygame.image.save(mascara, "Recursos/mascara.png")
+
+
             elif event.user_type == pygame_gui.UI_TEXT_ENTRY_CHANGED:
                 if event.ui_element == entry_clavos:
                     try:
