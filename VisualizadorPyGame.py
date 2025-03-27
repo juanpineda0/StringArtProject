@@ -93,7 +93,8 @@ mascara_rect = mascara.get_rect(center=imagen_rect.center)
 modo_mascara = False
 dibujando_mascara = False
 radio_pincel = 10
-titulo_mascara = pygame.font.Font(None, 36).render("Modo Máscara", True, (0, 0, 0))
+texto_titulo_mascara = "Modo Máscara: Cick izquierdo para borrar, Click derecho para incluir."
+titulo_mascara = pygame.font.Font(None, 36).render(texto_titulo_mascara, True, (0, 0, 0))
 boton_izquierdo_presionado = False
 boton_derecho_presionado = False
 
@@ -107,26 +108,27 @@ while running:
     time_delta = clock.tick(30) / 1000.0
     screen.fill(BACKGROUND_COLOR)
     
-    # Mostrar imagen base (escalada)
+    # Crear una copia de la imagen escalada con canal alfa
+    imagen_con_mascara = imagen_escalada.copy().convert_alpha()
+    
+    # Asegurar que la máscara tiene transparencia
+    mascara.set_alpha(230)  # Ajusta la opacidad de la máscara (0 = transparente, 255 = opaco)
+    
+    # Dibujar la imagen en la pantalla
     screen.blit(imagen_escalada, imagen_rect.topleft)
-
-    # Aplica la máscara a la imagen escalada
-    imagen_con_mascara = imagen_escalada.copy()
-    imagen_con_mascara.blit(mascara, (0, 0), special_flags=pygame.BLEND_RGBA_MULT)
-
-    # Dibuja la imagen con la máscara aplicada
-    screen.blit(imagen_con_mascara, imagen_rect.topleft)
+    
+    # Dibujar la máscara con transparencia sobre la imagen
+    screen.blit(mascara, mascara_rect.topleft)
 
     # Mostrar la mascara si esta activo el modo mascara.
     if modo_mascara:
         pygame.draw.circle(screen, (255, 0, 0), pygame.mouse.get_pos(), radio_pincel, 1) # Circulo rojo
-        screen.blit(mascara, imagen_rect.topleft)
         # Calcular coordenadas para centrar el título
         x = (WIDTH - titulo_mascara.get_width()) // 2
         y = 10
 
         # Dibujar el borde blanco
-        titulo_borde = pygame.font.Font(None, 36).render("Modo Máscara", True, (255, 255, 255))
+        titulo_borde = pygame.font.Font(None, 36).render(texto_titulo_mascara, True, (255, 255, 255))
         screen.blit(titulo_borde, (x - 1, y - 1))
         screen.blit(titulo_borde, (x + 1, y - 1))
         screen.blit(titulo_borde, (x - 1, y + 1))
@@ -170,19 +172,20 @@ while running:
 
         elif event.type == pygame.MOUSEMOTION:
             if moviendo_imagen:
-                imagen_rect.x = event.pos[0] - offset_x
-                imagen_rect.y = event.pos[1] - offset_y
+                dx = event.pos[0] - offset_x
+                dy = event.pos[1] - offset_y
+                imagen_rect.x = dx
+                imagen_rect.y = dy
+                mascara_rect.x = dx  # Asegurar que la máscara se mueve con la imagen
+                mascara_rect.y = dy
             elif dibujando_mascara:
                 mouse_x, mouse_y = event.pos
                 mouse_x -= imagen_rect.x
                 mouse_y -= imagen_rect.y
                 if boton_izquierdo_presionado:
-                    pygame.draw.circle(mascara, (0, 0, 0, 0), (mouse_x, mouse_y), radio_pincel)
-                elif boton_derecho_presionado:
                     pygame.draw.circle(mascara, (255, 255, 255, 255), (mouse_x, mouse_y), radio_pincel)
-
-        elif event.type == pygame.MOUSEMOTION and dibujando_mascara:
-            pygame.draw.circle(mascara, (255, 255, 255, 255), event.pos, radio_pincel)
+                elif boton_derecho_presionado:
+                    pygame.draw.circle(mascara, (0, 0, 0, 0), (mouse_x, mouse_y), radio_pincel)
 
         elif event.type == pygame.MOUSEWHEEL:
             if modo_mascara:
