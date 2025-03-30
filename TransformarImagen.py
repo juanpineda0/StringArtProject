@@ -9,12 +9,12 @@ BACKGROUND_COLOR = (255, 255, 255)
 NAIL_COLOR = (200, 200, 200)
 n_clavos = 213
 mostrar_etiquetas = False
-RADIUS = 300
+RADIUS = 480
 CENTER = (WIDTH // 2, HEIGHT // 2)
 # Variables para el escalado de la imagen
 escala = 1.0  # Escala inicial
 factor_escalado = 0.1  # Factor de cambio de escala por cada paso de la rueda
-Ruta = "Recursos/ConejoSancocho.png"
+Ruta = "Recursos/Puente.png"
 
 # Cargar imagen de referencia
 imagen = pygame.image.load(Ruta)
@@ -48,31 +48,26 @@ btn_mas = pygame_gui.elements.UIButton(
     text='+',
     manager=manager
 )
-
 btn_menos = pygame_gui.elements.UIButton(
     relative_rect=pygame.Rect((110, 60), (30, 30)),
     text='-',
     manager=manager
 )
-
 btn_color = pygame_gui.elements.UIButton(
     relative_rect=pygame.Rect((20, 100), (120, 30)),
     text='Color clavos',
     manager=manager
 )
-
 btn_mascara = pygame_gui.elements.UIButton(
     relative_rect=pygame.Rect((20, 140), (120, 30)),
     text='Modo máscara',
     manager=manager
 )
-
 btn_restablecer = pygame_gui.elements.UIButton(
     relative_rect=pygame.Rect((20, 180), (120, 30)),
     text='Restablecer',
     manager=manager
 )
-
 btn_Guardar_imagen = pygame_gui.elements.UIButton(
     relative_rect=pygame.Rect((20, 180), (120, 30)),
     text='Guardar imagen',
@@ -235,19 +230,34 @@ while running:
                         btn_color_clicado = False 
                 elif event.ui_element == btn_Guardar_imagen:
                     # Obtener los parámetros de escala y ubicación
-                    escala_imagen = escala
-                    ubicacion_imagen = imagen_rect.topleft
+                    escala_imagen = escala# Calcular la posición relativa del centro de la imagen con el centro de la pantalla
+                    centro_imagen = imagen_rect.center  # Centro de la imagen
+                    centro_pantalla = (WIDTH // 2, HEIGHT // 2)  # Centro de la pantalla
+                    ubicacion_imagen = (centro_imagen[0] - centro_pantalla[0], centro_imagen[1] - centro_pantalla[1])
+                    ruta_mascara = "Recursos/mascara.png"
 
                     # Crear una cadena de texto con los parámetros
-                    parametros = f"Ruta: {Ruta}\nEscala: {escala_imagen}\nUbicacion: {ubicacion_imagen}"
+                    parametros = f"Ruta: {Ruta}\nEscala: {escala_imagen}\nUbicacion: {ubicacion_imagen}\nRuta_mascara: {ruta_mascara}"
 
                     # Guardar la cadena de texto en un archivo .txt
                     with open("Recursos/parametros_imagen.txt", "w") as archivo:
                         archivo.write(parametros)
 
-                    # Guardar la máscara como imagen (opcional)
-                    pygame.image.save(mascara, "Recursos/mascara.png")
+                    # Crear una nueva superficie del tamaño adecuado para la máscara final
+                    mascara_final = pygame.Surface((2 * RADIUS, 2 * RADIUS), pygame.SRCALPHA)
 
+                    # Calcular la posición relativa del círculo dentro de la máscara original
+                    x_offset = CENTER[0] - RADIUS
+                    y_offset = CENTER[1] - RADIUS
+
+                    # Copiar la parte relevante de la máscara original a la nueva superficie
+                    mascara_final.blit(mascara, (0, 0), pygame.Rect(x_offset, y_offset, 2 * RADIUS, 2 * RADIUS))
+
+                    # Guardar la nueva máscara con el tamaño correcto
+                    pygame.image.save(mascara_final, ruta_mascara)
+                    
+                    # Establecer una bandera para salir en el siguiente ciclo de eventos
+                    running = False  
 
             elif event.user_type == pygame_gui.UI_TEXT_ENTRY_CHANGED:
                 if event.ui_element == entry_clavos:
