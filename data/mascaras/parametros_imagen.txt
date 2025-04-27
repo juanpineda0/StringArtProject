@@ -1,4 +1,4 @@
-Ruta: Recursos/Puente.png
-Escala: 1.5000000000000004
-Ubicacion: (-44, 0)
-Ruta_mascara: Recursos/mascara.png
+Ruta: data/imagenes\ConejoSancocho.png
+Escala: 2.4
+Ubicacion: (-53, -5)
+Ruta_mascara: data/mascaras/mascara.png

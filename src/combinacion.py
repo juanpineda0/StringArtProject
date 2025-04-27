@@ -14,12 +14,6 @@ def leer_parametros(ruta_parametros):
     parametros['Ubicacion'] = tuple(map(int, parametros['Ubicacion'][1:-1].split(', ')))
     return parametros
 
-import cv2
-import numpy as np
-
-import cv2
-import numpy as np
-
 def cargar_imagen(ruta, escala):
     """Carga, escala y recorta la imagen a 600x600 manteniendo el centro, con fondo transparente si es necesario."""
     imagen = cv2.imread(ruta, cv2.IMREAD_UNCHANGED)  # Cargar con canal alfa si está disponible
@@ -96,9 +90,6 @@ def aplicar_mascara(imagen, ruta_mascara):
         print("Escala de grises")
     elif imagen.shape[2] == 3:  # Imagen en BGR
         imagen = cv2.cvtColor(imagen, cv2.COLOR_BGR2BGRA)
-        print("Imagen en RGB")
-    else:
-        print("Imagen con alpha")
 
     # Obtener dimensiones de imagen y máscara
     h_img, w_img = imagen.shape[:2]
@@ -141,9 +132,15 @@ def visualizar_resultados(imagen_antes, titulo_antes, imagen_despues, titulo_des
     axs[1].scatter(clavos[:, 0], clavos[:, 1], c='r', s=2)
     plt.show()
 
-def main():
+def combinar_imagen() -> str:
+    """
+    Combina la imagen procesada con la máscara y aplica las transformaciones necesarias.
+    
+    Returns:
+        str: Ruta a la imagen procesada
+    """
     # Leer parámetros
-    parametros = leer_parametros("Recursos/parametros_imagen.txt")
+    parametros = leer_parametros("data/mascaras/parametros_imagen.txt")
     ruta_imagen = parametros["Ruta"]
     escala = parametros["Escala"]
     tx, ty = parametros["Ubicacion"]
@@ -154,7 +151,11 @@ def main():
     imagen_trasladada = aplicar_traslacion(imagen_elegida, tx, ty, escala)
     imagen = aplicar_mascara(imagen_trasladada, ruta_mascara)
 
+    # Guardar resultado
+    ruta_resultado = "data/resultados/imagen_procesada.jpg"
+    cv2.imwrite(ruta_resultado, imagen)
+
+    # Visualizar resultados
     visualizar_resultados(imagen_elegida, "Imagen elegida", imagen, "Imagen recortada")
     
-if __name__ == "__main__":
-    main()
+    return ruta_resultado

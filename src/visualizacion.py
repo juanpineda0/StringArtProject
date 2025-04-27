@@ -138,4 +138,4 @@ def visualizar_nomenclatura(ruta: str, nclavos: int):
     actualizar_grafico(None)
     plt.show()
 
-#visualizar_nomenclatura("C:/Users/Usuario/OneDrive - Muros & Techos S.A/Documentos/Python/StringArt/data/resultados/ConejoSancocho.txt", 200)
+#visualizar_nomenclatura("data/resultados/ConejoSancocho.txt", 200)
